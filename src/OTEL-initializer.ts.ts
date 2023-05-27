@@ -1,7 +1,18 @@
 import { trace, context } from '@opentelemetry/api';
-import { registerOTel } from '@vercel/otel';
+import { NodeSDK } from '@opentelemetry/sdk-node';
+import { OTLPTraceExporter } from '@opentelemetry/exporter-trace-otlp-http';
+import { Resource } from '@opentelemetry/resources';
+import { SemanticResourceAttributes } from '@opentelemetry/semantic-conventions';
+import { SimpleSpanProcessor } from '@opentelemetry/sdk-trace-node';
 
-registerOTel('next-app-dir-tracing');
+const sdk = new NodeSDK({
+  resource: new Resource({
+    [SemanticResourceAttributes.SERVICE_NAME]: 'next-app',
+  }),
+  spanProcessor: new SimpleSpanProcessor(new OTLPTraceExporter()),
+});
 
-export const tracer = trace.getTracer('next-app-dir-tracing-tracer');
+sdk.start();
+
+export const tracer = trace.getTracer('next-app-tracer');
 export { context };
